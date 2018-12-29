@@ -57,6 +57,15 @@ public class JdbcConnection implements DatabaseConnection {
         try {
             return con.getMetaData().getDatabaseMajorVersion();
         } catch (SQLException e) {
+            try {
+                String version = con.getMetaData().getDatabaseProductVersion();
+                String[] parts = version.split(".");
+                if (parts.length > 1) {
+                    LogService.getLog(getClass()).warning(LogType.USER_MESSAGE, "JDBC driver version: " + version, e);
+                    return Integer.parseInt(parts[0]);
+                }
+            } catch (SQLException ignored) {
+            }
             throw new DatabaseException(e);
         }
     }
@@ -66,6 +75,14 @@ public class JdbcConnection implements DatabaseConnection {
         try {
             return con.getMetaData().getDatabaseMinorVersion();
         } catch (SQLException e) {
+            try {
+                String version = con.getMetaData().getDatabaseProductName();
+                String[] parts = version.split(".");
+                if (parts.length >= 2) {
+                    return Integer.parseInt(parts[1]);
+                }
+            } catch (SQLException ignored) {
+            }
             throw new DatabaseException(e);
         }
     }
